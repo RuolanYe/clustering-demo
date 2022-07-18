@@ -76,15 +76,44 @@ function Dashboard() {
       //refresh
       svg.selectAll("*").remove();
       
+      var defs = svg.append("defs")
+      defs.append("pattern")
+        .attr("id","test-image")
+        .attr("height","100%")
+        .attr("width","100%")
+        .attr("patternContentUnits","objectBoundingBox")
+        .append("image")
+        .attr("height",1)
+        .attr("width",1)
+        .attr("preserveAspectRatio","none")
+        .attr("xlink:href","http://127.0.0.1:8000/media/post_images/Picture1_ZzTRote.png")
+
+        defs.selectAll(".dogs-pattern")
+        .data(root.descendants().slice(1))
+        .enter().append("pattern")
+        .attr("class","dogs-pattern")
+        .attr("id",d =>d.data.name)
+        .attr("height","100%")
+        .attr("width","100%")
+        .attr("patternContentUnits","objectBoundingBox")
+        .append("image")
+        .attr("height",1)
+        .attr("width",1)
+        .attr("preserveAspectRatio","none")
+        .attr("xlink:href",d => d.data.image)
+      
+
       const node = svg.append("g")
         .selectAll("circle")
         .data(root.descendants().slice(1))
         .join("circle")
-          .attr("fill", d => d.children ? color(d.depth) : "white")
+          .attr("fill", d => d.children ? color(d.depth) : "url(#"+d.data.name+")")
           .attr("pointer-events", d => !d.children ? "none" : null)
           .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
           .on("mouseout", function() { d3.select(this).attr("stroke", null); })
           .on("click", (event, d) => focus !== d && (zoom(event, d), event.stopPropagation()));
+
+      
 
       const label = svg.append("g")
           .style("font", "10px sans-serif")
