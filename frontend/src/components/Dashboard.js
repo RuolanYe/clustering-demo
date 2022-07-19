@@ -258,7 +258,7 @@ function Dashboard() {
     {/* </div> */}
         <div display="flex" align-items="center" justify-content="center">
         {/* <container display="flex" justify-content="center" > */}
-          <svg ref={svgRef} height="auto" width="auto"></svg>
+          <svg ref={svgRef}></svg>
         {/* </container> */}
         </div>
         {/* <svg/> */}
