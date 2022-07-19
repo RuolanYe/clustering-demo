@@ -4,6 +4,8 @@ import {useSelector, useDispatch} from 'react-redux'
 import { getImages, createImage } from '../reducers/imagesSlice';
 import * as d3 from 'd3'
 import {hierarchy} from 'd3-hierarchy'
+import './bootstrap.css'
+import legend from 'react'
 
 function Dashboard() {
   //get image list from redux state
@@ -31,16 +33,29 @@ function Dashboard() {
     
     const svgRef=useRef()
     const data={name:'dogs',children:[]}
-    data.children.push({name:'1',children:[]},
-                        {name:'2',children:[]},
-                        {name:'3',children:[]})
+    const classes = []
+
+    classes.map((c)=>{
+      data.children.push({name:c,children:[]})
+    })
 
      //d3 plots
     useEffect(() => {
       // update data 
       imageList.map((Img) => {
-        data.children[Img.cluster-1].children.push({name:Img.title, image:'http://localhost:8000'+Img.image})
+        // console.log(Img)
+        // console.log(classes.indexOf(Img.cluster.toString()))
+        // data.children[classes.indexOf(Img.cluster)]
+        if(classes.indexOf(Img.cluster)<0){
+          var class_name=Img.cluster
+          classes.push(class_name)
+          data.children.push({name:class_name,children:[]})
+        }
+        data.children[classes.indexOf(Img.cluster)].children.push({name:Img.title, image:'http://localhost:8000'+Img.image})
+        
       })
+      // console.log(classes)
+      // console.log(data)
 
       const width = 932;
       const height = 932;
@@ -53,10 +68,11 @@ function Dashboard() {
           // .sort((a, b) => b.value - a.value)
           )
       
-      const color = d3.scaleLinear()
-          .domain([0, 5])
-          .range(["hsl(152,80%,80%)", "hsl(228,30%,40%)"])
-          .interpolate(d3.interpolateHcl)
+      // const color = d3.scaleLinear()
+      //     .domain([0, 5])
+      //     .range(["hsl(160,80%,80%)", "hsl(250,30%,40%)"])
+      //     .interpolate(d3.interpolateHcl)
+      const color = ["#89b4e4","#b79ef2","#746281","#cd88a8","#faa5b7","#efc182","#fab78a","#81b071","#87c9b5","#ac8eba"]
 
       const root = pack(data);
       // console.log(root)
@@ -69,7 +85,7 @@ function Dashboard() {
         .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
         .style("display", "block")
         .style("margin", "0 -14px")
-        .style("background", color(0))
+        .style("background", "white")
         .style("cursor", "pointer")
         .on("click", (event) => zoom(event, root));
       
@@ -86,7 +102,7 @@ function Dashboard() {
         .attr("height",1)
         .attr("width",1)
         .attr("preserveAspectRatio","none")
-        .attr("xlink:href","http://127.0.0.1:8000/media/post_images/Picture1_ZzTRote.png")
+        // .attr("xlink:href","http://127.0.0.1:8000/media/post_images/Picture1_ZzTRote.png")
 
         defs.selectAll(".dogs-pattern")
         .data(root.descendants().slice(1))
@@ -107,7 +123,8 @@ function Dashboard() {
         .selectAll("circle")
         .data(root.descendants().slice(1))
         .join("circle")
-          .attr("fill", d => d.children ? color(d.depth) : "url(#"+d.data.name+")")
+          // .attr("fill", d => d.children ? color(d.depth) : "url(#"+d.data.name+")")
+          .attr("fill", d => d.children ? color[classes.indexOf(d.data.name)%10] : "url(#"+d.data.name+")")
           .attr("pointer-events", d => !d.children ? "none" : null)
           .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
           .on("mouseout", function() { d3.select(this).attr("stroke", null); })
@@ -116,7 +133,7 @@ function Dashboard() {
       
 
       const label = svg.append("g")
-          .style("font", "10px sans-serif")
+          .style("font", "20px sans-serif")
           .attr("pointer-events", "none")
           .attr("text-anchor", "middle")
         .selectAll("text")
@@ -124,7 +141,10 @@ function Dashboard() {
         .join("text")
           .style("fill-opacity", d => d.parent === root ? 1 : 0)
           .style("display", d => d.parent === root ? "inline" : "none")
-          .text(d => d.data.name);
+          .text((d) => {
+            // console.log(d)
+            return d.data.name
+          });
           
       zoomTo([root.x, root.y, root.r * 2]);
       
@@ -203,34 +223,47 @@ function Dashboard() {
       
         dispatch(createImage(form_data))
         setState({title: ''});
-        // this.setState({image: ''});
       };
 
 
-  return (
-    <div className="Dashboard">
+  return (<>
+    {/* <div className="card"> */}
+      <h1>Dogs Classification Demo</h1>
+      <br/>
+      <h5>Welcome to the Dogs Classification Project! You can supply a dog image, and the system can identify the breed of the input. The classification model is trained with dog images from 120 breeds, and adopts pretrained <a href='https://arxiv.org/abs/1512.03385?context=cs'>ResNet-18</a> as feature extractor. We also generate a bubble plot below built with <a href="https://d3js.org/">D3.js</a> to visualize the results.</h5>
+      <h5><strong>Please upload an image of any dogs to try out!</strong></h5>
+      <br/>
+      <div className="card border-primary mb-3">
         <form onSubmit={handleSubmit}>
-          <p>
-            <input type="text" placeholder='Title' id='title' value={state.title} onChange={handleChange} required/>
-          </p>
-          <p>
-            <input type="file"
-                   id="image"
-                   accept="image/png, image/jpeg"  onChange={handleImageChange} required/>
-          </p>
-          <input type="submit"/>
-        </form>
-        {/* <svg width='500' height='500'>
-          {dogsPack.descendants().map(({x,y,r})=>(<circle cx={x} cy={y} r={r} fill='transparent' stroke='black'/>))}
-        </svg> */}
-        {/* <div>         
-          {imageList.map((Img) => (
-            <img src={'http://localhost:8000'+Img.image} />      
-          ))}
-        </div> */}
-        <svg ref={svgRef}></svg>
+          <fieldset>
+            <div className="card-header">Upload Image</div>
+            <div className="form-group">
+              <label className="form-label mt-4">Image name</label>
+              <input className="form-control" type="text" placeholder='Enter image name' id='title' value={state.title} onChange={handleChange} required/>
+            </div>
+            <div className="form-group">
+              <label className="form-label mt-4">Choose image</label>
+                <input className="form-control"
+                      type="file"
+                      id="image"
+                      accept="image/png, image/jpeg"  onChange={handleImageChange} required/>
+            </div>
+            <div className="form-group">
+              <br/>
+              <button type="submit" className="btn btn-primary">Upload</button>
+            </div>
+          </fieldset>
+        </form> 
+      </div>
+    {/* </div> */}
+        <div display="flex" align-items="center" justify-content="center">
+        {/* <container display="flex" justify-content="center" > */}
+          <svg ref={svgRef} height="auto" width="auto"></svg>
+        {/* </container> */}
+        </div>
         {/* <svg/> */}
-    </div>
+    
+    </>
   )
 }
 
