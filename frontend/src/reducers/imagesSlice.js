@@ -1,4 +1,3 @@
-// import {GET_LEADS} from '../actions/types.js';
 import imageService from '../actions/imageService'
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit'
 
@@ -17,20 +16,20 @@ export const getImages = createAsyncThunk('images/getAll', async (_,thunkAPI)=>{
     }  
 })
 
-//delete lead
-// export const deleteLead = createAsyncThunk(
-//     'Leads/delete',
+//delete image
+// export const deleteImage = createAsyncThunk(
+//     'Images/delete',
 //     async (id) => {
 //         try{
 //             // const token = thunkAPI.getState().auth.user.token 
-//             return await leadService.deleteLead(id)
+//             return await imageService.deleteImage(id)
 //         }catch (error){
 //             console.log(error)
 //         }
 //     }
 // )
 
-// //Create lead
+// //Create image
 export const createImage = createAsyncThunk(
     'images/create',
     async (imageData, thunkAPI) => {
@@ -58,7 +57,7 @@ export const imagesSlice = createSlice({
         .addCase(getImages.fulfilled,(state,action)=>{
 
             state.images = action.payload
-            // console.log(action)
+            
         })
         .addCase(getImages.rejected,(state,action)=>{
             console.log('getImages rejected')
@@ -80,9 +79,6 @@ export const imagesSlice = createSlice({
             console.log('createImage pending')
         })
         .addCase(createImage.fulfilled,(state,action)=>{
-            // console.log('slice')
-            // console.log(state.leads)
-            // console.log(action)
             state.images.push(action.payload.data)
         })
         .addCase(createImage.rejected,(state,action)=>{

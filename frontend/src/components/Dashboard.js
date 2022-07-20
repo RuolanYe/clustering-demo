@@ -1,11 +1,8 @@
 import React ,{ useRef, useEffect, useState } from 'react'
-import axios from 'axios'
 import {useSelector, useDispatch} from 'react-redux'
 import { getImages, createImage } from '../reducers/imagesSlice';
 import * as d3 from 'd3'
-import {hierarchy} from 'd3-hierarchy'
 import './bootstrap.css'
-import legend from 'react'
 
 function Dashboard() {
   //get image list from redux state
@@ -18,18 +15,6 @@ function Dashboard() {
 
     }, [dispatch])
 
- 
-    
-
-    // data[1].children.push({name:'12314', image:'http://127.0.0.1:8000/media/post_images/Picture2.png'})
-    // imageList.map((Img) => {
-    //   data.children[Img.cluster-1].children.push({name:Img.title, image:'http://localhost:8000'+Img.image})
-    // })
-
-    // const dogsHierarchy = hierarchy(data).sum(()=>1)
-    // const createPack = pack().size([500,500])
-    // const dogsPack = createPack(dogsHierarchy)
-    // console.log(dogsPack)
     
     const svgRef=useRef()
     const data={name:'dogs',children:[]}
@@ -43,9 +28,7 @@ function Dashboard() {
     useEffect(() => {
       // update data 
       imageList.map((Img) => {
-        // console.log(Img)
-        // console.log(classes.indexOf(Img.cluster.toString()))
-        // data.children[classes.indexOf(Img.cluster)]
+
         if(classes.indexOf(Img.cluster)<0){
           var class_name=Img.cluster
           classes.push(class_name)
@@ -54,8 +37,7 @@ function Dashboard() {
         data.children[classes.indexOf(Img.cluster)].children.push({name:Img.title, image:'http://localhost:8000'+Img.image})
         
       })
-      // console.log(classes)
-      // console.log(data)
+
 
       const width = 932;
       const height = 932;
@@ -64,9 +46,7 @@ function Dashboard() {
         .padding(3)
         (d3.hierarchy(data)
           .sum(()=>1)
-          // .sum(d => d.value)
-          // .sort((a, b) => b.value - a.value)
-          )
+        )
       
       // const color = d3.scaleLinear()
       //     .domain([0, 5])
@@ -75,13 +55,11 @@ function Dashboard() {
       const color = ["#89b4e4","#b79ef2","#746281","#cd88a8","#faa5b7","#efc182","#fab78a","#81b071","#87c9b5","#ac8eba"]
 
       const root = pack(data);
-      // console.log(root)
       let focus = root;
       let view;
       
 
       const svg=d3.select(svgRef.current)
-      // const svg = d3.create("svg")
         .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
         .style("display", "block")
         .style("margin", "0 -14px")
@@ -102,7 +80,6 @@ function Dashboard() {
         .attr("height",1)
         .attr("width",1)
         .attr("preserveAspectRatio","none")
-        // .attr("xlink:href","http://127.0.0.1:8000/media/post_images/Picture1_ZzTRote.png")
 
         defs.selectAll(".dogs-pattern")
         .data(root.descendants().slice(1))
@@ -123,7 +100,6 @@ function Dashboard() {
         .selectAll("circle")
         .data(root.descendants().slice(1))
         .join("circle")
-          // .attr("fill", d => d.children ? color(d.depth) : "url(#"+d.data.name+")")
           .attr("fill", d => d.children ? color[classes.indexOf(d.data.name)%10] : "url(#"+d.data.name+")")
           .attr("pointer-events", d => !d.children ? "none" : null)
           .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
@@ -142,7 +118,6 @@ function Dashboard() {
           .style("fill-opacity", d => d.parent === root ? 1 : 0)
           .style("display", d => d.parent === root ? "inline" : "none")
           .text((d) => {
-            // console.log(d)
             return d.data.name
           });
           
@@ -152,8 +127,6 @@ function Dashboard() {
         const k = width / v[2];
     
         view = v;
-
-        // console.log(v)
     
         label.attr("transform", d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
         node.attr("transform", d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
@@ -161,7 +134,6 @@ function Dashboard() {
       }
 
       function zoom(event, d) {
-        // const focus0 = focus;
     
         focus = d;
     
@@ -206,20 +178,9 @@ function Dashboard() {
     
     const handleSubmit = (e) => {
         e.preventDefault();
-        // console.log(state);
         let form_data = new FormData();
         form_data.append('image', state.image, state.image.name);
         form_data.append('title', state.title);
-        // let url = 'http://localhost:8000/api/images/';
-        // axios.post(url, form_data, {
-        //   headers: {
-        //     'content-type': 'multipart/form-data'
-        //   }
-        // })
-        //     .then(res => {
-        //       console.log(res.data);
-        //     })
-        //     .catch(err => console.log(err))
       
         dispatch(createImage(form_data))
         setState({title: ''});
@@ -227,7 +188,6 @@ function Dashboard() {
 
 
   return (<>
-    {/* <div className="card"> */}
       <h1>Dogs Classification Demo</h1>
       <br/>
       <h5>Welcome to the Dogs Classification Project! You can supply a dog image, and the system can identify the breed of the input. The classification model is trained with dog images from 120 breeds, and adopts pretrained <a href='https://arxiv.org/abs/1512.03385?context=cs'>ResNet-18</a> as feature extractor. We also generate a bubble plot below built with <a href="https://d3js.org/">D3.js</a> to visualize the results.</h5>
@@ -255,13 +215,9 @@ function Dashboard() {
           </fieldset>
         </form> 
       </div>
-    {/* </div> */}
         <div display="flex" align-items="center" justify-content="center">
-        {/* <container display="flex" justify-content="center" > */}
           <svg ref={svgRef}></svg>
-        {/* </container> */}
         </div>
-        {/* <svg/> */}
     
     </>
   )

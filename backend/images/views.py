@@ -11,8 +11,6 @@ import random
 import copy
 import torch
 import numpy as np
-# import os
-# print(os.getcwd())
 from images.predict.infer import predict_dog_class 
 from images.predict.train import DogClassifier
 from skimage import io
@@ -21,6 +19,7 @@ from skimage import io
 class ImageView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     
+    # initialize the classification model
     categories = np.load("./images/predict/models/category.npy")
     model = DogClassifier()
     model.load_state_dict(torch.load("./images/predict/models/model.pt", map_location=torch.device('cpu')))
@@ -34,19 +33,16 @@ class ImageView(APIView):
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        # images_serializer = ImageSerializer(data=request.data)
+       
         post = request.POST.copy() # to make it mutable
         post['title'] = request.data['title']
         post['image'] = copy.deepcopy(request.data['image'])
         probability = round(random.random()*100)
         post['probability'] = probability
-        post['cluster'] = 'a_dog_class'
         test_image = io.imread(request.data['image'])
+        # predict dog class
         post['cluster'] = predict_dog_class(test_image, self.model, self.categories)
-        
-        # print('new post')
-        # print(post)
-        # print(test_image)
+
         images_serializer = ImageSerializer(data=post)
         if images_serializer.is_valid():
             images_serializer.save()
